@@ -1,4 +1,4 @@
-# stocks-market-dash-plotly
+# stock-market-dash-plotly
 
 ## Description
 
