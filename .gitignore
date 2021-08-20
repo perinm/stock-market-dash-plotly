@@ -1,4 +1,4 @@
 venv/
-storage/dash/5stocks-*
+**/5stocks-*.csv
 manchine-dns.json
 log/

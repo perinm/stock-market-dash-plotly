@@ -1,0 +1,2 @@
+yfinance == 0.1.63
+pandas == 1.2.5

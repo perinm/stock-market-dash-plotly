@@ -44,6 +44,7 @@ services:
     image: dash-image-lucas:$VERSION
     volumes:
       - ./storage/dash:/usr/src/app
+      - ./data:/data
     environment:
       - "TZ=US/Eastern"
     # ports:

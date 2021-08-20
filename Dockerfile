@@ -1,9 +1,9 @@
 FROM python:3.9.5-buster
 
+WORKDIR /usr/src/app
+
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-
-WORKDIR /usr/src/app
 
 CMD python app.py 
 # gunicorn -w 4 -b 0.0.0.0:8050 app:server

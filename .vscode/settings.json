@@ -1,6 +1,8 @@
 {
     "files.exclude": {
-        "**/*.csv": true,
+        // "**/*.csv": true,
         "**/venv": true
-    }
+    },
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
 }
