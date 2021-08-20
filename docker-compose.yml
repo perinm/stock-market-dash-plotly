@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  traefik:
+    # The latest official supported Traefik docker image
+    image: traefik:v2.5.0
+    # Enables the Traefik Dashboard and tells Traefik to listen to docker
+    # enable --log.level=INFO so we can see what Traefik is doing in the log files
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--accesslog=true"
+      - "--accessLog.filePath=/log/access.log"
+      - "--accessLog.bufferingSize=10"
+      - "--log.level=ERROR"
+      - "--log.filePath=/log/traefik.log"
+    ports:
+      # Exposes port 80 for incomming web requests
+      - target: 80
+        published: 80
+        mode: host
+      - "8080:8080"
+    user: "0"
+    networks:
+      - traefik
+      - inbound
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./log:/log
+      - "./dashboard_users:/dashboard_users:ro"
+    environment:
+      - "TZ=US/Eastern"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard-secure.middlewares=authentication"
+      - "traefik.http.middlewares.authentication.basicauth.usersfile=/dashboard_users"
+  dash:
+    build:
+      context: .
+    image: dash-image-lucas:$VERSION
+    volumes:
+      - ./storage/dash:/usr/src/app
+    environment:
+      - "TZ=US/Eastern"
+    # ports:
+    #   - 8050:8050
+    networks:
+      - inbound
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dash.rule=Host(`dash.localhost`)"
+      - "traefik.http.routers.dash.entrypoints=web"
+      - "traefik.http.routers.dash.middlewares=authentication,test-errorpages"
+      - "traefik.http.services.dash.loadbalancer.server.port=8050"
+      - "traefik.http.middlewares.test-errorpages.errors.status=400-599"
+      - "traefik.http.middlewares.test-errorpages.errors.service=error"
+      - "traefik.http.middlewares.test-errorpages.errors.query=/{status}.html"
+
+  error:
+    image: guillaumebriday/traefik-custom-error-pages
+    networks:
+      - inbound
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.error.rule=Host(`error.localhost`)"
+      - "traefik.http.routers.error.service=error"
+      - "traefik.http.services.error.loadbalancer.server.port=80"
+      - "traefik.http.routers.error.entrypoints=web"
+networks:
+  traefik:
+    driver: overlay
+    name: traefik
+  inbound:
+    driver: overlay
+    name: inbound

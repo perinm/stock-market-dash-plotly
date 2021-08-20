@@ -1,0 +1,4 @@
+venv/
+storage/dash/5stocks-*
+manchine-dns.json
+log/
